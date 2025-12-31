@@ -1,0 +1,15 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "bluearchive-cafe-prod-notice",
+	"main": "src/index.js",
+	"compatibility_date": "2025-12-25",
+	"observability": {
+		"enabled": true
+	},
+	"kv_namespaces": [
+		{
+			"binding": "NOTICE",
+			"id": "cf4cc49fd54d489aa61a30502a0150d7"
+		}
+	]
+}
