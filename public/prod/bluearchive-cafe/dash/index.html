@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Blue Archive Dash</title>
+  <title>蔚蓝咖啡厅控制面板（测试版）</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -25,13 +25,13 @@
 </head>
 
 <body>
-  <h1>Blue Archive Dash</h1>
+  <h1>蔚蓝咖啡厅控制面板（测试版）</h1>
   <p><strong>UUID:</strong> <span id="uuidDisplay">加载中...</span></p>
   <p><strong>JSON:</strong></p>
   <pre id="jsonDisplay">加载中...</pre>
 
-  <button id="jpBtn">设置日语配音</button>
-  <button id="cnBtn">设置中文配音</button>
+  <button id="jpBtn">设置为日语配音</button>
+  <button id="cnBtn">设置为中文配音</button>
 
   <script>
     // 本地 API 相对路径
@@ -42,8 +42,7 @@
     const uuid = urlParams.get("uuid") || "未提供uuid";
     document.getElementById("uuidDisplay").textContent = uuid;
 
-    if (uuid !== "未提供uuid") {
-      // 页面加载时获取 JSON
+    function fetchAndUpdateJson() {
       fetch(`${API_BASE}?uuid=${uuid}`)
         .then(res => res.text())
         .then(text => {
@@ -57,8 +56,13 @@
         .catch(err => {
           document.getElementById("jsonDisplay").textContent = "获取失败: " + err;
         });
+    }
+
+    if (uuid !== "未提供uuid") {
+      // 页面加载时获取 JSON
+      fetchAndUpdateJson();
     } else {
-      document.getElementById("jsonDisplay").textContent = "没有 UUID，无法获取数据";
+      document.getElementById("jsonDisplay").textContent = "没有 UUID";
     }
 
     // 日语配音按钮
@@ -67,12 +71,8 @@
       fetch(`${API_BASE}?uuid=${uuid}&table=cn&asset=jp&voice=jp`)
         .then(res => res.text())
         .then(text => {
-          try {
-            const json = JSON.parse(text);
-            alert("日语配音设置成功:\n" + JSON.stringify(json, null, 2));
-          } catch (e) {
-            alert("加载失败");
-          }
+          alert("保存成功，重新登录以生效");
+          fetchAndUpdateJson();
         })
         .catch(err => alert("请求失败: " + err));
     });
@@ -83,12 +83,8 @@
       fetch(`${API_BASE}?uuid=${uuid}&table=cn&asset=jp&voice=cn`)
         .then(res => res.text())
         .then(text => {
-          try {
-            const json = JSON.parse(text);
-            alert("中文配音设置成功:\n" + JSON.stringify(json, null, 2));
-          } catch (e) {
-            alert("加载失败");
-          }
+          alert("保存成功，重新登录以生效");
+          fetchAndUpdateJson();
         })
         .catch(err => alert("请求失败: " + err));
     });
