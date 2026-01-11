@@ -7,7 +7,7 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
+      padding: 10px 20px;
     }
 
     pre {
@@ -27,17 +27,14 @@
 <body>
   <h1>蔚蓝咖啡厅控制面板（测试版）</h1>
   <p><strong>UUID:</strong> <span id="uuidDisplay">加载中...</span></p>
-  <p><strong>JSON:</strong></p>
+  <p><strong>当前配置:</strong></p>
   <pre id="jsonDisplay">加载中...</pre>
 
   <button id="jpBtn">设置为日语配音</button>
   <button id="cnBtn">设置为中文配音</button>
 
   <script>
-    // 本地 API 相对路径
     const API_BASE = "/api/dash";
-
-    // 从 URL 查询参数获取 uuid
     const urlParams = new URLSearchParams(window.location.search);
     const uuid = urlParams.get("uuid") || "未提供uuid";
     document.getElementById("uuidDisplay").textContent = uuid;
@@ -59,13 +56,17 @@
     }
 
     if (uuid !== "未提供uuid") {
-      // 页面加载时获取 JSON
       fetchAndUpdateJson();
     } else {
       document.getElementById("jsonDisplay").textContent = "没有 UUID";
     }
 
-    // 日语配音按钮
+    if (uuid !== "未提供uuid") {
+      fetchAndUpdateJson();
+    } else {
+      document.getElementById("jsonDisplay").textContent = "没有 UUID";
+    }
+
     document.getElementById("jpBtn").addEventListener("click", () => {
       if (uuid === "未提供uuid") return alert("没有 UUID");
       fetch(`${API_BASE}?uuid=${uuid}&table=cn&asset=jp&voice=jp`)
@@ -77,7 +78,6 @@
         .catch(err => alert("请求失败: " + err));
     });
 
-    // 中文配音按钮
     document.getElementById("cnBtn").addEventListener("click", () => {
       if (uuid === "未提供uuid") return alert("没有 UUID");
       fetch(`${API_BASE}?uuid=${uuid}&table=cn&asset=jp&voice=cn`)
