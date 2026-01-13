@@ -69,10 +69,10 @@
 
     document.getElementById("jpBtn").addEventListener("click", () => {
       if (uuid === "未提供uuid") return alert("没有 UUID");
-      fetch(`${API_BASE}?uuid=${uuid}&table=cn&asset=jp&voice=jp`)
+      fetch(`${API_BASE}?uuid=${uuid}&table=cn&asset=jp&media=jp`)
         .then(res => res.text())
         .then(text => {
-          alert("保存成功，重新登录以生效");
+          alert("保存成功，重新启动以生效");
           fetchAndUpdateJson();
         })
         .catch(err => alert("请求失败: " + err));
@@ -80,10 +80,10 @@
 
     document.getElementById("cnBtn").addEventListener("click", () => {
       if (uuid === "未提供uuid") return alert("没有 UUID");
-      fetch(`${API_BASE}?uuid=${uuid}&table=cn&asset=jp&voice=cn`)
+      fetch(`${API_BASE}?uuid=${uuid}&table=cn&asset=jp&media=cn`)
         .then(res => res.text())
         .then(text => {
-          alert("保存成功，重新登录以生效");
+          alert("保存成功，重新启动以生效");
           fetchAndUpdateJson();
         })
         .catch(err => alert("请求失败: " + err));
