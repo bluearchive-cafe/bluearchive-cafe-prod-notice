@@ -23,10 +23,10 @@ export default {
                 const uuid = params.get("uuid");
                 const table = params.get("table");
                 const asset = params.get("asset");
-                const voice = params.get("voice");
-                if (uuid && table && asset && voice) {
+                const media = params.get("media");
+                if (uuid && table && asset && media) {
                     try {
-                        await env.PREFERENCE.put(uuid, JSON.stringify({ table: table, asset: asset, voice: voice }));
+                        await env.PREFERENCE.put(uuid, JSON.stringify({ table, asset, media }));
                         return new Response("API：偏好设置：保存设置成功", { headers });
                     } catch { return new Response("API：偏好设置：保存设置失败", { headers, status: 500 }); }
                 } else if (uuid) {
