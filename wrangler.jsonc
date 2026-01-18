@@ -15,7 +15,7 @@
 	},
 	"kv_namespaces": [
 		{
-			"binding": "STATUS",
+			"binding": "RESOURCESTATUS",
 			"id": "8ae8975ae1dc472eac0fc89b0a03c8c7"
 		},
 		{
