@@ -147,61 +147,58 @@
         (async () => {
             const params = new URLSearchParams(location.search);
             const uuid = params.get("uuid");
-
-            {
-                const res = await fetch(`/api/dash?uuid=${uuid}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    document.getElementById("table-check").checked = data.table === "cn";
-                    document.getElementById("asset-check").checked = data.asset === "cn";
-                    document.getElementById("media-check").checked = data.media === "cn";
-                }
-            }
-
-            {
-                const res = await fetch("/api/status");
-                if (res.ok) {
-                    const data = await res.json();
-
-                    const applyStatus = (key, elId) => {
-                        const el = document.getElementById(elId);
-                        const official = data[key]?.official?.version;
-                        const localized = data[key]?.localized?.version;
-
-                        el.classList.remove("ok", "fail", "wait");
-
-                        if (!official || !localized) {
-                            el.textContent = "未获取";
-                            el.classList.add("wait");
-                        } else if (official === localized) {
-                            el.textContent = "已同步";
-                            el.classList.add("ok");
-                        } else {
-                            el.textContent = "未同步";
-                            el.classList.add("fail");
-                        }
-                    };
-
-                    applyStatus("table", "table");
-                    applyStatus("asset", "asset");
-                    applyStatus("media", "media");
-                }
-            }
-
             const save = document.getElementById("save");
+            const read = document.getElementById("read");
+            const show = document.getElementById("show");
+            const resStatus = await fetch("/api/status");
+            const resDash = await fetch(`/api/dash?uuid=${uuid}`);
+
+            if (resStatus.ok) {
+                const data = await resStatus.json();
+                const applyStatus = (key, elId) => {
+                    const el = document.getElementById(elId);
+                    const official = data[key]?.official?.version;
+                    const localized = data[key]?.localized?.version;
+
+                    el.classList.remove("ok", "fail", "wait");
+
+                    if (!official || !localized) {
+                        el.textContent = "未获取";
+                        el.classList.add("wait");
+                    } else if (official === localized) {
+                        el.textContent = "已同步";
+                        el.classList.add("ok");
+                    } else {
+                        el.textContent = "未同步";
+                        el.classList.add("fail");
+                    }
+                };
+
+                applyStatus("table", "table");
+                applyStatus("asset", "asset");
+                applyStatus("media", "media");
+            }
+
+
+            if (resDash.ok) {
+                const data = await resDash.json();
+                document.getElementById("table-check").checked = data.table === "cn";
+                document.getElementById("asset-check").checked = data.asset === "cn";
+                document.getElementById("media-check").checked = data.media === "cn";
+            }
+
             save.addEventListener("click", async () => {
-                const tableBox = document.getElementById("table-check");
-                const assetBox = document.getElementById("asset-check");
-                const mediaBox = document.getElementById("media-check");
-                const table = tableBox.checked ? "cn" : "jp";
-                const asset = assetBox.checked ? "cn" : "jp";
-                const media = mediaBox.checked ? "cn" : "jp";
+                const tableCheck = document.getElementById("table-check");
+                const assetCheck = document.getElementById("asset-check");
+                const mediaCheck = document.getElementById("media-check");
+                const table = tableCheck.checked ? "cn" : "jp";
+                const asset = assetCheck.checked ? "cn" : "jp";
+                const media = mediaCheck.checked ? "cn" : "jp";
                 const url = `/api/dash?uuid=${uuid}&table=${table}&asset=${asset}&media=${media}`;
                 const response = await fetch(url);
                 alert(response.ok ? "保存成功，重新登录以生效" : `保存失败，UUID：${uuid}`);
             });
 
-            const read = document.getElementById("read");
             read.addEventListener("click", () => {
                 alert(
                     "控制面板使用说明\n" +
@@ -212,10 +209,7 @@
                 );
             });
 
-            const show = document.getElementById("show");
-            show.addEventListener("click", () => {
-                alert(uuid);
-            });
+            show.addEventListener("click", () => { alert(uuid); });
         })();
     </script>
 </body>
