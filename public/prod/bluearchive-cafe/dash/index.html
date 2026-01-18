@@ -131,9 +131,9 @@
             <span id="asset">获取中</span>
             <span id="media">获取中</span>
             <span><strong>启用</strong></span>
-            <input type="checkbox" id="table">
-            <input type="checkbox" id="asset">
-            <input type="checkbox" id="media">
+            <input id="table-check" type="checkbox">
+            <input id="asset-check" type="checkbox">
+            <input id="media-check" type="checkbox">
         </main>
 
         <footer>
@@ -144,87 +144,79 @@
     </content>
 
     <script>
-(async () => {
-    const params = new URLSearchParams(location.search);
-    const uuid = params.get("uuid");
+        (async () => {
+            const params = new URLSearchParams(location.search);
+            const uuid = params.get("uuid");
 
-    async function fetchSyncStatus() {
-        const res = await fetch("/api/status");
-        if (!res.ok) return;
-        const data = await res.json();
-
-        function applyStatus(key, elId) {
-            const el = document.getElementById(elId);
-            const official = data[key]?.official?.version;
-            const localized = data[key]?.localized?.version;
-
-            el.classList.remove("ok", "fail", "wait");
-
-            if (!official || !localized) {
-                el.textContent = "未获取";
-                el.classList.add("wait");
-            } else if (official === localized) {
-                el.textContent = "已同步";
-                el.classList.add("ok");
-            } else {
-                el.textContent = "未同步";
-                el.classList.add("fail");
+            {
+                const res = await fetch(`/api/dash?uuid=${uuid}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById("table-check").checked = data.table === "cn";
+                    document.getElementById("asset-check").checked = data.asset === "cn";
+                    document.getElementById("media-check").checked = data.media === "cn";
+                }
             }
-        }
 
-        applyStatus("table", "table");
-        applyStatus("asset", "asset");
-        applyStatus("media", "media");
-    }
+            {
+                const res = await fetch("/api/status");
+                if (res.ok) {
+                    const data = await res.json();
 
-    async function fetchStatus() {
-        const res = await fetch(`/api/dash?uuid=${uuid}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        const tableBox = document.getElementById("table");
-        const assetBox = document.getElementById("asset");
-        const mediaBox = document.getElementById("media");
-        tableBox.checked = data.table === "cn";
-        assetBox.checked = data.asset === "cn";
-        mediaBox.checked = data.media === "cn";
-    }
+                    const applyStatus = (key, elId) => {
+                        const el = document.getElementById(elId);
+                        const official = data[key]?.official?.version;
+                        const localized = data[key]?.localized?.version;
 
-    await fetchStatus();
-    await fetchSyncStatus();
+                        el.classList.remove("ok", "fail", "wait");
 
-    const save = document.getElementById("save");
-    save.addEventListener("click", async () => {
-        const tableBox = document.getElementById("table");
-        const assetBox = document.getElementById("asset");
-        const mediaBox = document.getElementById("media");
-        const table = tableBox.checked ? "cn" : "jp";
-        const asset = assetBox.checked ? "cn" : "jp";
-        const media = mediaBox.checked ? "cn" : "jp";
-        const url = `/api/dash?uuid=${uuid}&table=${table}&asset=${asset}&media=${media}`;
-        const response = await fetch(url);
+                        if (!official || !localized) {
+                            el.textContent = "未获取";
+                            el.classList.add("wait");
+                        } else if (official === localized) {
+                            el.textContent = "已同步";
+                            el.classList.add("ok");
+                        } else {
+                            el.textContent = "未同步";
+                            el.classList.add("fail");
+                        }
+                    };
 
-        if (response.ok) {
-            alert("保存成功，重新登录以生效");
-            await fetchStatus();
-        } else alert(`保存失败，UUID：${uuid}`);
-    });
+                    applyStatus("table", "table");
+                    applyStatus("asset", "asset");
+                    applyStatus("media", "media");
+                }
+            }
 
-    const read = document.getElementById("read");
-    read.addEventListener("click", () => {
-        alert(
-            "控制面板使用说明\n" +
-            "1. 如果游戏异常可尝试暂时关闭文本汉化\n" +
-            "2. 仅当同步状态为「已同步」时功能生效\n" +
-            "3. 语音汉化功能生效范围仅限「主线剧情」\n" +
-            "4. 请勿随意将自己的UUID泄露给其他人"
-        );
-    });
+            const save = document.getElementById("save");
+            save.addEventListener("click", async () => {
+                const tableBox = document.getElementById("table-check");
+                const assetBox = document.getElementById("asset-check");
+                const mediaBox = document.getElementById("media-check");
+                const table = tableBox.checked ? "cn" : "jp";
+                const asset = assetBox.checked ? "cn" : "jp";
+                const media = mediaBox.checked ? "cn" : "jp";
+                const url = `/api/dash?uuid=${uuid}&table=${table}&asset=${asset}&media=${media}`;
+                const response = await fetch(url);
+                alert(response.ok ? "保存成功，重新登录以生效" : `保存失败，UUID：${uuid}`);
+            });
 
-    const show = document.getElementById("show");
-    show.addEventListener("click", () => {
-        alert(uuid);
-    });
-})();
+            const read = document.getElementById("read");
+            read.addEventListener("click", () => {
+                alert(
+                    "控制面板使用说明\n" +
+                    "1. 如果游戏异常可尝试暂时关闭文本汉化\n" +
+                    "2. 仅当同步状态为「已同步」时功能生效\n" +
+                    "3. 语音汉化功能生效范围仅限「主线剧情」\n" +
+                    "4. 请勿随意将自己的UUID泄露给其他人"
+                );
+            });
+
+            const show = document.getElementById("show");
+            show.addEventListener("click", () => {
+                alert(uuid);
+            });
+        })();
     </script>
 </body>
 
