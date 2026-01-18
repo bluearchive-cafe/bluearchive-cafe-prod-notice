@@ -2,93 +2,230 @@
 <html lang="zh-CN">
 
 <head>
-  <meta charset="UTF-8">
-  <title>蔚蓝咖啡厅控制面板（测试版）</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 10px 20px;
-    }
+    <meta charset="UTF-8">
+    <title>蔚蓝咖啡厅控制面板</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap');
 
-    pre {
-      background: #f4f4f4;
-      padding: 10px;
-      border-radius: 5px;
-    }
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-family: 'Kosugi Maru', sans-serif;
+            color: rgb(0, 0, 0);
+        }
 
-    button {
-      margin-right: 10px;
-      padding: 10px 20px;
-      font-size: 16px;
-    }
-  </style>
+        video {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+
+        content {
+            margin: 0 10vw;
+            padding: 15px 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            justify-content: center;
+            box-sizing: border-box;
+            border-radius: 45px;
+            background-color: rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(8px);
+        }
+
+        header {
+            display: flex;
+            justify-content: center;
+            font-weight: 400;
+            font-size: 20pt;
+        }
+
+        main {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            place-items: center;
+            box-sizing: border-box;
+            width: 100%;
+            padding: 15px 15px;
+            row-gap: 10vh;
+            border-radius: 30px;
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        footer {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        footer a {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.5);
+            text-decoration: none;
+            border-radius: 12px;
+            min-width: 100px;
+            justify-content: flex-start;
+            position: relative;
+            cursor: pointer;
+            color: rgb(27, 127, 243);
+        }
+
+        footer a img {
+            width: 20px;
+            height: 20px;
+            left: 12px;
+            position: absolute;
+            opacity: 75%;
+        }
+
+        footer a span {
+            display: block;
+            text-align: center;
+            margin-left: 32px;
+            width: 100%;
+        }
+
+        .ok {
+            color: rgb(46, 204, 113);
+            font-weight: 600;
+        }
+
+        .fail {
+            color: rgb(231, 76, 60);
+            font-weight: 600;
+        }
+
+        .wait {
+            color: rgb(245, 180, 0);
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
-  <h1>蔚蓝咖啡厅控制面板（测试版）</h1>
-  <p><strong>UUID:</strong> <span id="uuidDisplay">加载中...</span></p>
-  <p><strong>当前配置:</strong></p>
-  <pre id="jsonDisplay">加载中...</pre>
+    <video src="assets/videos/background.mp4" autoplay muted loop playsinline></video>
 
-  <button id="jpBtn">设置为日语配音</button>
-  <button id="cnBtn">设置为中文配音</button>
+    <content>
+        <header>
+            <strong>蔚蓝咖啡厅控制面板</strong>
+        </header>
 
-  <script>
-    const API_BASE = "/api/dash";
-    const urlParams = new URLSearchParams(window.location.search);
-    const uuid = urlParams.get("uuid") || "未提供uuid";
-    document.getElementById("uuidDisplay").textContent = uuid;
+        <main>
+            <span><strong>功能</strong></span>
+            <span>文本</span>
+            <span>图像</span>
+            <span>语音</span>
+            <span><strong>状态</strong></span>
+            <span id="table">获取中</span>
+            <span id="asset">获取中</span>
+            <span id="media">获取中</span>
+            <span><strong>启用</strong></span>
+            <input type="checkbox" id="table">
+            <input type="checkbox" id="asset">
+            <input type="checkbox" id="media">
+        </main>
 
-    function fetchAndUpdateJson() {
-      fetch(`${API_BASE}?uuid=${uuid}`)
-        .then(res => res.text())
-        .then(text => {
-          try {
-            const json = JSON.parse(text);
-            document.getElementById("jsonDisplay").textContent = JSON.stringify(json, null, 2);
-          } catch (e) {
-            document.getElementById("jsonDisplay").textContent = "加载失败";
-          }
-        })
-        .catch(err => {
-          document.getElementById("jsonDisplay").textContent = "获取失败: " + err;
-        });
+        <footer>
+            <a id="save"><img src="assets/icons/save.svg"><span>保存设置</span></a>
+            <a id="read"><img src="assets/icons/read.svg"><span>查看说明</span></a>
+            <a id="show"><img src="assets/icons/show.svg"><span>显示UUID</span></a>
+        </footer>
+    </content>
+
+    <script>
+(async () => {
+    const params = new URLSearchParams(location.search);
+    const uuid = params.get("uuid");
+
+    async function fetchSyncStatus() {
+        const res = await fetch("/api/status");
+        if (!res.ok) return;
+        const data = await res.json();
+
+        function applyStatus(key, elId) {
+            const el = document.getElementById(elId);
+            const official = data[key]?.official?.version;
+            const localized = data[key]?.localized?.version;
+
+            el.classList.remove("ok", "fail", "wait");
+
+            if (!official || !localized) {
+                el.textContent = "未获取";
+                el.classList.add("wait");
+            } else if (official === localized) {
+                el.textContent = "已同步";
+                el.classList.add("ok");
+            } else {
+                el.textContent = "未同步";
+                el.classList.add("fail");
+            }
+        }
+
+        applyStatus("table", "table");
+        applyStatus("asset", "asset");
+        applyStatus("media", "media");
     }
 
-    if (uuid !== "未提供uuid") {
-      fetchAndUpdateJson();
-    } else {
-      document.getElementById("jsonDisplay").textContent = "没有 UUID";
+    async function fetchStatus() {
+        const res = await fetch(`/api/dash?uuid=${uuid}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        const tableBox = document.getElementById("table");
+        const assetBox = document.getElementById("asset");
+        const mediaBox = document.getElementById("media");
+        tableBox.checked = data.table === "cn";
+        assetBox.checked = data.asset === "cn";
+        mediaBox.checked = data.media === "cn";
     }
 
-    if (uuid !== "未提供uuid") {
-      fetchAndUpdateJson();
-    } else {
-      document.getElementById("jsonDisplay").textContent = "没有 UUID";
-    }
+    await fetchStatus();
+    await fetchSyncStatus();
 
-    document.getElementById("jpBtn").addEventListener("click", () => {
-      if (uuid === "未提供uuid") return alert("没有 UUID");
-      fetch(`${API_BASE}?uuid=${uuid}&table=cn&asset=jp&media=jp`)
-        .then(res => res.text())
-        .then(text => {
-          alert("保存成功，重新启动以生效");
-          fetchAndUpdateJson();
-        })
-        .catch(err => alert("请求失败: " + err));
+    const save = document.getElementById("save");
+    save.addEventListener("click", async () => {
+        const tableBox = document.getElementById("table");
+        const assetBox = document.getElementById("asset");
+        const mediaBox = document.getElementById("media");
+        const table = tableBox.checked ? "cn" : "jp";
+        const asset = assetBox.checked ? "cn" : "jp";
+        const media = mediaBox.checked ? "cn" : "jp";
+        const url = `/api/dash?uuid=${uuid}&table=${table}&asset=${asset}&media=${media}`;
+        const response = await fetch(url);
+
+        if (response.ok) {
+            alert("保存成功，重新登录以生效");
+            await fetchStatus();
+        } else alert(`保存失败，UUID：${uuid}`);
     });
 
-    document.getElementById("cnBtn").addEventListener("click", () => {
-      if (uuid === "未提供uuid") return alert("没有 UUID");
-      fetch(`${API_BASE}?uuid=${uuid}&table=cn&asset=jp&media=cn`)
-        .then(res => res.text())
-        .then(text => {
-          alert("保存成功，重新启动以生效");
-          fetchAndUpdateJson();
-        })
-        .catch(err => alert("请求失败: " + err));
+    const read = document.getElementById("read");
+    read.addEventListener("click", () => {
+        alert(
+            "控制面板使用说明\n" +
+            "1. 如果游戏异常可尝试暂时关闭文本汉化\n" +
+            "2. 仅当同步状态为「已同步」时功能生效\n" +
+            "3. 语音汉化功能生效范围仅限「主线剧情」\n" +
+            "4. 请勿随意将自己的UUID泄露给其他人"
+        );
     });
-  </script>
+
+    const show = document.getElementById("show");
+    show.addEventListener("click", () => {
+        alert(uuid);
+    });
+})();
+    </script>
 </body>
 
 </html>
