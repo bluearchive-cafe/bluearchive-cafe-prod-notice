@@ -12,15 +12,5 @@
 	},
 	"observability": {
 		"enabled": true
-	},
-	"kv_namespaces": [
-		{
-			"binding": "RESOURCESTATUS",
-			"id": "8ae8975ae1dc472eac0fc89b0a03c8c7"
-		},
-		{
-			"binding": "PREFERENCE",
-			"id": "6b8c26e909cc4539a071e747d4fabd8b"
-		}
-	]
+	}
 }
